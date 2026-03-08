@@ -1,0 +1,16 @@
+[package]
+name = "wAI-server"
+version = "0.1.0"
+edition = "2026"
+
+[dependencies]
+axum = "0.7"
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+lapin = "2.3"
+reqwest = { version = "0.11", features = ["json", "stream"] }
+prometheus = "0.13"
+metrics-exporter-prometheus = "0.12"
+tracing = "0.1"
+tower-http = { version = "0.5", features = ["cors"] }
