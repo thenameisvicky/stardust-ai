@@ -1,6 +1,9 @@
-use axum::{routing::{post, get}, Json, Router};
-use lapin::{options::*, types::FieldTable, Connection, ConnectionProperties, BasicProperties};
-use prometheus::{Encoder, TextEncoder, Registry, Counter, Histogram, opts, histogram_opts};
+use axum::{
+    routing::{get, post},
+    Json, Router,
+};
+use lapin::{options::*, types::FieldTable, BasicProperties, Connection, ConnectionProperties};
+use prometheus::{histogram_opts, opts, Counter, Encoder, Histogram, Registry, TextEncoder};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -23,37 +26,36 @@ struct AppState {
 
 #[tokio::main]
 async fn main() {
-    let conn = Connection::connect(
-        "amqp://127.0.0.1:5672/%2f",
-        ConnectionProperties::default()
-    ).await.unwrap();
+    let conn = Connection::connect("amqp://127.0.0.1:5672/%2f", ConnectionProperties::default())
+        .await
+        .unwrap();
 
     let channel = conn.create_channel().await.unwrap();
 
-    channel.queue_declare(
-        "LLM_INFERENCE",
-        QueueDeclareOptions::default(),
-        FieldTable::default()
-    ).await.unwrap();
+    channel
+        .queue_declare(
+            "LLM_INFERENCE",
+            QueueDeclareOptions::default(),
+            FieldTable::default(),
+        )
+        .await
+        .unwrap();
 
     // Prometheus
     let registry = Registry::new();
 
-    let api_requests = Counter::with_opts(opts!(
-        "api_requests_total",
-        "Total API requests"
-    )).unwrap();
+    let api_requests =
+        Counter::with_opts(opts!("api_requests_total", "Total API requests")).unwrap();
 
-    let api_failures = Counter::with_opts(opts!(
-        "api_failures_total",
-        "Total failed API requests"
-    )).unwrap();
+    let api_failures =
+        Counter::with_opts(opts!("api_failures_total", "Total failed API requests")).unwrap();
 
     let api_latency = Histogram::with_opts(histogram_opts!(
         "api_latency_ms",
         "API latency",
-        vec![10.0,50.0,100.0,200.0,500.0,1000.0]
-    )).unwrap();
+        vec![10.0, 50.0, 100.0, 200.0, 500.0, 1000.0]
+    ))
+    .unwrap();
 
     registry.register(Box::new(api_requests.clone())).unwrap();
     registry.register(Box::new(api_failures.clone())).unwrap();
@@ -63,7 +65,7 @@ async fn main() {
         channel,
         api_requests,
         api_failures,
-        api_latency
+        api_latency,
     });
 
     let app = Router::new()
@@ -80,28 +82,30 @@ async fn main() {
 
 async fn generate(
     axum::extract::State(state): axum::extract::State<Arc<AppState>>,
-    Json(payload): Json<GenerateRequest>
+    Json(payload): Json<GenerateRequest>,
 ) -> Json<GenerateResponse> {
-
     state.api_requests.inc();
 
     let timer = state.api_latency.start_timer();
 
     let message = serde_json::to_vec(&payload).unwrap();
 
-    match state.channel.basic_publish(
-        "",
-        "LLM_INFERENCE",
-        BasicPublishOptions::default(),
-        &message,
-        BasicProperties::default()
-    ).await {
-
+    match state
+        .channel
+        .basic_publish(
+            "",
+            "LLM_INFERENCE",
+            BasicPublishOptions::default(),
+            &message,
+            BasicProperties::default(),
+        )
+        .await
+    {
         Ok(_) => {
             timer.observe_duration();
 
             Json(GenerateResponse {
-                message: "Request enqueued".to_string()
+                message: "Request enqueued".to_string(),
             })
         }
 
@@ -110,7 +114,7 @@ async fn generate(
             timer.observe_duration();
 
             Json(GenerateResponse {
-                message: "Failed".to_string()
+                message: "Failed".to_string(),
             })
         }
     }
