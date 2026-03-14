@@ -3,16 +3,8 @@ name = "rust-server"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "consumer"
-path = "src/bin/consumer.rs"
-
-[[bin]]
-name = "server"
-path = "src/server.rs"
-
 [dependencies]
-axum = "0.7"
+axum = { version = "0.7", features = ["ws"] }
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -22,4 +14,5 @@ prometheus = "0.13"
 metrics-exporter-prometheus = "0.12"
 tracing = "0.1"
 tower-http = { version = "0.5", features = ["cors"] }
-futures-util = "0.3"
+futures-util = { version = "0.3", features = ["sink"] }
+tokio-tungstenite = "0.28.0"

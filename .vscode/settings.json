@@ -1,10 +1,14 @@
 {
-    "markdownlint.config": {
-        "MD013": false,
-        "MD025": false,
-    },
-    "[rust]": {
-        "editor.defaultFormatter": "vremyavnikuda.rust-fmt",
-        "editor.formatOnSave": true
-    }
+  "markdownlint.config": {
+    "MD013": false,
+    "MD025": false
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "vremyavnikuda.rust-fmt",
+    "editor.formatOnSave": true
+  },
+  "workbench.colorTheme": "Default Dark Modern",
+  "editor.cursorBlinking": "expand",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.cursorStyle": "block"
 }

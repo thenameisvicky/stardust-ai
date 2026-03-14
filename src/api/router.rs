@@ -1,0 +1,22 @@
+use axum::{
+    routing::{get},
+    Router,
+};
+use std::sync::Arc;
+
+use crate::core::websocket::handler::ws_handler;
+use crate::modules::agent::routes::agent_routes;
+use crate::state::AppState;
+
+pub async fn run(state: Arc<AppState>) {
+    let app = Router::new()
+        .merge(agent_routes())
+        .route("/ws", get(ws_handler))
+        .with_state(state);
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+    println!("Server running on 3000");
+
+    axum::serve(listener, app).await.unwrap();
+}

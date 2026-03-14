@@ -1,19 +1,16 @@
+use crate::state::AppState;
 use futures_util::StreamExt;
-use lapin::{options::*, types::FieldTable, Connection, ConnectionProperties};
+use lapin::{options::*, types::FieldTable};
 use serde::Deserialize;
+use std::sync::Arc;
 
 #[derive(Deserialize)]
 struct JobPayload {
     prompt: String,
 }
 
-#[tokio::main]
-async fn main() {
-    let conn = Connection::connect("amqp://127.0.0.1:5672/%2f", ConnectionProperties::default())
-        .await
-        .unwrap();
-
-    let channel = conn.create_channel().await.unwrap();
+pub async fn run(state: Arc<AppState>) {
+    let channel = state.amqp.create_channel().await.unwrap();
 
     channel
         .queue_declare(
@@ -43,21 +40,13 @@ async fn main() {
 
         println!("Received prompt: {}", payload.prompt);
 
-        // Call Ollama
+        // TODO: move this later to llm module
         let response = reqwest::Client::new()
             .post("http://localhost:11434/api/generate")
             .json(&serde_json::json!({
                 "model": "llama3.2",
-                "system": "You are a strict assistant, Respond with exactly one concise sentence, Do not explain or add extra sentences.",
                 "prompt": payload.prompt,
-                "stream": false,
-                "options": {
-                    "temperature": 0.2,
-                    "num_predict": 40,
-                    "top_p": 0.9,
-                    "repeat_penalty": 1.1,
-                    "stop": ["\n"]
-                }
+                "stream": false
             }))
             .send()
             .await
@@ -65,11 +54,9 @@ async fn main() {
 
         let body = response.text().await.unwrap();
 
-        let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+        println!("LLM response {}", body);
 
-        let text = json["response"].as_str().unwrap();
-
-        println!("LLM response: {}", text);
+        // state.ws_tx.send(body.to_string()).unwrap();
 
         delivery.ack(BasicAckOptions::default()).await.unwrap();
     }
