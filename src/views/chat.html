@@ -64,8 +64,8 @@
 
         ws.onmessage = (event) => {
           if (event.data.startsWith("CLIENT_ID:")) {
-            clientId = event.data.replace("CLIENT_ID:", "");
-            console.log("Client ID:", clientId);
+            client_id = event.data.replace("CLIENT_ID:", "");
+            console.log("Client ID:", client_id);
             return;
           }
 
@@ -93,6 +93,10 @@
       connectWS();
 
       async function generate() {
+        if (!client_id) {
+          console.error("No client ID yet. Wait for WS connection.");
+          return;
+        }
         const promptInput = document.getElementById("prompt");
         const prompt = promptInput.value.trim();
         if (!prompt) return;
@@ -109,7 +113,7 @@
           await fetch("http://localhost:3000/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt }),
+            body: JSON.stringify({ prompt, client_id }),
           });
         } catch (err) {
           loading.textContent = "Error sending prompt";

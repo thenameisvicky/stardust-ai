@@ -17,7 +17,7 @@ pub async fn ws_handler(
     ws.on_upgrade(move |socket| handle_socket(socket, state))
 }
 
-async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
+async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
     let client_id = Uuid::new_v4().to_string();
 
     let (tx, mut rx) = mpsc::channel::<String>(100);

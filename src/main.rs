@@ -4,7 +4,7 @@ use lapin::{Connection, ConnectionProperties};
 use prometheus::{Counter, Registry};
 use reqwest::Client;
 use std::collections::HashMap;
-use tokio::sync::{broadcast, Mutex};
+use tokio::sync::Mutex;
 
 mod api;
 mod core;
