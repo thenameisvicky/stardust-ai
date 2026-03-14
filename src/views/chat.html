@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <title>LLM Chat Client</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      #prompt {
+        width: 400px;
+        padding: 8px;
+      }
+      button {
+        padding: 8px 16px;
+        margin-left: 5px;
+      }
+      #output {
+        margin-top: 20px;
+        border: 1px solid #ddd;
+        padding: 15px;
+        width: 500px;
+        min-height: 100px;
+      }
+      .user {
+        color: blue;
+      }
+      .llm {
+        color: green;
+      }
+      .loading {
+        font-style: italic;
+        color: gray;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>LLM Chat Client</h2>
+
+    <input id="prompt" placeholder="Enter prompt..." />
+    <button onclick="generate()">Generate</button>
+
+    <div id="output"></div>
+
+    <script>
+      let ws;
+      let reconnectInterval = 2000;
+      let connected = false;
+
+      // Output div
+      const output = document.getElementById("output");
+
+      function connectWS() {
+        ws = new WebSocket("ws://localhost:3000/ws");
+
+        ws.onopen = () => {
+          connected = true;
+          console.log("Connected to WS server");
+        };
+
+        ws.onmessage = (event) => {
+          const loadingElem = document.querySelector(".loading");
+          if (loadingElem) loadingElem.remove();
+
+          const p = document.createElement("p");
+          p.className = "llm";
+          p.textContent = event.data;
+          output.appendChild(p);
+        };
+
+        ws.onclose = () => {
+          connected = false;
+          console.log("WebSocket disconnected. Reconnecting...");
+          setTimeout(connectWS, reconnectInterval);
+        };
+
+        ws.onerror = (err) => {
+          console.error("WebSocket error:", err);
+          ws.close();
+        };
+      }
+
+      connectWS();
+
+      async function generate() {
+        const promptInput = document.getElementById("prompt");
+        const prompt = promptInput.value.trim();
+        if (!prompt) return;
+        output.innerHTML = "";
+        const userMsg = document.createElement("p");
+        userMsg.className = "user";
+        userMsg.textContent = prompt;
+        output.appendChild(userMsg);
+        const loading = document.createElement("p");
+        loading.className = "loading";
+        loading.textContent = "Loading...";
+        output.appendChild(loading);
+        try {
+          await fetch("http://localhost:3000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt }),
+          });
+        } catch (err) {
+          loading.textContent = "Error sending prompt";
+          console.error(err);
+        }
+      }
+    </script>
+  </body>
+</html>

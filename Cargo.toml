@@ -13,6 +13,6 @@ reqwest = { version = "0.11", features = ["json", "stream"] }
 prometheus = "0.13"
 metrics-exporter-prometheus = "0.12"
 tracing = "0.1"
-tower-http = { version = "0.5", features = ["cors"] }
+tower-http = { version = "0.5", features = ["cors", "fs"] }
 futures-util = { version = "0.3", features = ["sink"] }
 tokio-tungstenite = "0.28.0"

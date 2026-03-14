@@ -1,27 +1,18 @@
 # Architecture
 
 ```mermaid
-flowchart TD
-    REST["REST API - Axum Router"]
-    WS["WebSocket Endpoint /ws"]
-    AppState["AppState: RabbitMQ, WS Broadcast, HTTP Client, Config, Prometheus"]
-    LLM["LLM Module - Ollama API"]
-    Chat["Chat Agent Module - routes/logic"]
-    Analytics["Analytics Module"]
-    Campaigns["Campaigns Module"]
-    Feed["Feed Module"]
+sequenceDiagram
+    participant Client
+    participant REST_API as REST API (Axum)
+    participant WS as WebSocket /ws
+    participant Chat as Chat Agent Module
+    participant AppState
+    participant LLM as LLM Module (Ollama API)
 
-    REST -->|Routes| Chat
-    REST -->|Routes| Analytics
-    REST -->|Routes| Campaigns
-    REST -->|Routes| Feed
-
-    Chat --> AppState
-    Analytics --> AppState
-    Campaigns --> AppState
-    Feed --> AppState
-
-    WS --> AppState
-    AppState --> LLM
-    LLM --> AppState
-    WS -->|Broadcast| AppState
+    Client->>REST_API: POST /chat with prompt
+    REST_API->>Chat: Forward prompt
+    Chat->>AppState: Publish Job to Queue
+    AppState->>LLM: Send prompt for inference
+    LLM-->>AppState: Return response
+    AppState-->>WS: Broadcast response
+    WS-->>Client: Receive processed response

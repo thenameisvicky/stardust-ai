@@ -9,6 +9,11 @@ struct JobPayload {
     prompt: String,
 }
 
+#[derive(Deserialize, Debug)]
+struct LLMResponse {
+    response: String,
+}
+
 pub async fn run(state: Arc<AppState>) {
     let channel = state.amqp.create_channel().await.unwrap();
 
@@ -54,9 +59,13 @@ pub async fn run(state: Arc<AppState>) {
 
         let body = response.text().await.unwrap();
 
-        println!("LLM response {}", body);
+        let llm_resp: LLMResponse = serde_json::from_str(&body).unwrap();
 
-        // state.ws_tx.send(body.to_string()).unwrap();
+        println!("LLM response {:?}", llm_resp);
+
+        if let Err(err) = state.ws_tx.send(llm_resp.response.clone()) {
+            eprintln!("Error sending to WS clients: {:?}", err);
+        }
 
         delivery.ack(BasicAckOptions::default()).await.unwrap();
     }
