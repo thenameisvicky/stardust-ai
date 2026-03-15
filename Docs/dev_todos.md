@@ -13,16 +13,16 @@
 # March 21 2026
 
 [] Implement Synchronus API endpoint and test it with WATT application.
-[] Implement prometheus scraping track metrics every metrics needed.
-[] Build grafana dashboard.
+[] Deploy backend in Railway with github action - in a machine with same spec as personal laptop.
+[] Build perfect system prompt and choose a perfect model for text generation.
 [] Containerize this backend with Docker compose.
 
 # March 22 2026
 
+[] Implement prometheus scraping track metrics every metrics needed.
+[] Build grafana dashboard.
 [] Decide what logs to store and what not from docker container/prometheus.
 [] Run this engine image in personal laptop.
-[] Deploy backend in Railway with github action - in a machine with same spec as personal laptop.
-[] Build perfect system prompt and choose a perfect model for text generation.
 [] Implement fake RAG.
 [] Calculate resource usage (RAM, ROM, CPU), Calculate infra cost for this MVP, Plan money saving plan to build home server.
 
