@@ -1,180 +1,302 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stardust</title>
-
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&family=Bebas+Neue&family=Inter:wght@400;700;900&family=Space+Mono&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      body {
-        margin: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-family: Arial, sans-serif;
-        background: #f5f7fb;
+      :root {
+        --bg: #020202;
+        --card: #080808;
+        --border: #151515;
+        --accent: #ff3131;
+        --gold: #c9a94a;
+        --text-main: #ffffff;
+        --text-dim: #777777;
       }
 
-      .container {
-        width: 650px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        padding: 30px;
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        font-family: "Inter", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background:
+          linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+          linear-gradient(
+            90deg,
+            rgba(255, 0, 0, 0.02),
+            rgba(0, 255, 0, 0.01),
+            rgba(0, 0, 255, 0.02)
+          );
+        z-index: 10;
+        background-size:
+          100% 3px,
+          3px 100%;
+        pointer-events: none;
+      }
+
+      #particles {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 2rem;
+        z-index: 3;
       }
 
       .logo {
-        text-align: center;
-        font-size: 42px;
-        margin-bottom: 5px;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        font-size: 4rem;
+        line-height: 1;
       }
 
-      .logo .relay {
-        font-family: cursive;
-        font-weight: 900;
+      .stardust-text {
+        font-family: "Pacifico", cursive;
+        color: white;
+        margin-right: 10px;
+        display: inline-block;
+        transform: skewX(-40deg) rotate(-1deg) translateY(-8px);
       }
 
-      .logo .ai {
-        font-weight: bold;
-        color: red;
+      .ai {
+        font-family: "Bebas Neue", sans-serif;
+        color: var(--accent);
+        letter-spacing: 4px;
       }
 
       .desc {
-        text-align: center;
-        color: #666;
-        margin-bottom: 25px;
+        color: var(--text-dim);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-top: 10px;
       }
 
-      .input-area {
+      .chat-container {
+        width: 95%;
+        max-width: 800px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 4px;
         display: flex;
-        gap: 10px;
-      }
-
-      #prompt {
-        flex: 1;
-        padding: 10px;
-        border-radius: 6px;
-        border: 1px solid #ddd;
-        font-size: 14px;
-      }
-
-      button {
-        padding: 10px 18px;
-        border: none;
-        background: #3b82f6;
-        color: white;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background: #2563eb;
+        flex-direction: column;
+        z-index: 3;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
       }
 
       #output {
-        margin-top: 20px;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 15px;
-        height: 250px;
+        height: 400px;
         overflow-y: auto;
-        background: #fafafa;
+        padding: 2rem;
+        border-bottom: 1px solid var(--border);
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent) transparent;
       }
 
       .message {
-        margin-bottom: 12px;
-        line-height: 1.5;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+        font-size: 0.95rem;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .user {
-        color: #2563eb;
-        font-weight: 600;
+        color: var(--gold);
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+      }
+      .user::before {
+        content: "> ";
       }
 
       .llm {
-        color: #111;
+        color: var(--text-main);
+        border-left: 2px solid var(--accent);
+        padding-left: 1rem;
       }
 
       .loading {
         font-style: italic;
-        color: #888;
+        color: var(--text-dim);
+        font-size: 0.8rem;
+      }
+
+      /* Input Area */
+      .input-area {
+        display: flex;
+        padding: 1rem;
+        background: #000;
+      }
+
+      #prompt {
+        flex: 1;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: white;
+        padding: 12px 20px;
+        font-family: "Space Mono", monospace;
+        font-size: 0.9rem;
+        outline: none;
+      }
+
+      #prompt:focus {
+        border-color: var(--accent);
+      }
+
+      .gen-btn {
+        background: var(--text-main);
+        color: black;
+        border: none;
+        padding: 0 25px;
+        font-weight: 900;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: 0.3s;
+      }
+
+      .gen-btn:hover {
+        background: var(--accent);
+        color: white;
+      }
+
+      .footer {
+        margin-top: 2rem;
+        font-size: 0.65rem;
+        color: #333;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-weight: 900;
+        z-index: 3;
       }
     </style>
   </head>
 
   <body>
-    <div class="container">
-      <div class="logo">
-        <span class="relay">Stardust</span><span class="ai">AI</span>
-      </div>
+    <canvas id="particles"></canvas>
 
-      <div class="desc">Generate customized messages for you CRM</div>
+    <div class="header">
+      <div class="logo">
+        <span class="stardust-text">Stardust</span><span class="ai">AI</span>
+      </div>
+      <div class="desc">Foundational Systems Research</div>
+    </div>
+
+    <div class="chat-container">
+      <div id="output">
+        <div class="message llm">
+          System initialized. Awaiting protocol instructions.
+        </div>
+      </div>
 
       <div class="input-area">
-        <input id="prompt" placeholder="Ask something..." />
-        <button onclick="generate()">Generate</button>
+        <input
+          id="prompt"
+          placeholder="Execute command..."
+          autocomplete="off"
+        />
+        <button class="gen-btn" onclick="generate()">Execute</button>
       </div>
-
-      <div id="output"></div>
     </div>
+
+    <div class="footer">© 2026 ARKAION LABORATORY</div>
 
     <script>
       let ws;
       let client_id = null;
-      let ai_message = null;
-
+      let aiMessage = null;
       const output = document.getElementById("output");
 
       function connectWS() {
-        ws = new WebSocket("ws://localhost:3000/ws");
+        ws = new WebSocket("ws://" + window.location.host + "/ws");
 
-        ws.onopen = () => {
-          console.log("Connected to WS server");
-        };
-
-        let aiMessage = null;
+        ws.onopen = () => console.log("Connected to Stardust Engine");
 
         ws.onmessage = (event) => {
           if (event.data.startsWith("CLIENT_ID:")) {
             client_id = event.data.replace("CLIENT_ID:", "");
-            console.log(client_id);
             return;
           }
 
           document.querySelector(".loading")?.remove();
 
           if (!aiMessage) {
-            aiMessage = document.createElement("p");
-            aiMessage.className = "llm";
+            aiMessage = document.createElement("div");
+            aiMessage.className = "message llm";
             output.appendChild(aiMessage);
           }
 
           aiMessage.textContent += event.data;
+          output.scrollTop = output.scrollHeight;
         };
       }
 
       connectWS();
 
       async function generate() {
-        if (!client_id) {
-          console.log("Waiting for client id");
-          return;
-        }
+        if (!client_id) return;
 
-        const prompt = document.getElementById("prompt").value.trim();
+        const promptInput = document.getElementById("prompt");
+        const prompt = promptInput.value.trim();
         if (!prompt) return;
 
-        document.getElementById("prompt").value = "";
+        promptInput.value = "";
+        aiMessage = null;
 
-        const user = document.createElement("div");
-        user.className = "message user";
-        user.textContent = prompt;
-
-        output.appendChild(user);
+        const userMsg = document.createElement("div");
+        userMsg.className = "message user";
+        userMsg.textContent = prompt;
+        output.appendChild(userMsg);
 
         const loading = document.createElement("div");
         loading.className = "message loading";
-        loading.textContent = "AI is thinking...";
-
+        loading.textContent = "Processing cycles...";
         output.appendChild(loading);
 
         output.scrollTop = output.scrollHeight;
@@ -182,12 +304,50 @@
         await fetch("/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: prompt,
-            client_id: client_id,
-          }),
+          body: JSON.stringify({ prompt: prompt, client_id: client_id }),
         });
       }
+
+      const canvas = document.getElementById("particles");
+      const ctx = canvas.getContext("2d");
+      let W,
+        H,
+        particles = [];
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: Math.random() * 2 + 0.5,
+          a: Math.random(),
+          speed: Math.random() * 0.5 + 0.1,
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        for (const p of particles) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(201,169,74,${p.a * 0.3})`;
+          ctx.fill();
+          p.y -= p.speed;
+          if (p.y < 0) p.y = H;
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+
+      document.getElementById("prompt").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") generate();
+      });
     </script>
   </body>
 </html>
