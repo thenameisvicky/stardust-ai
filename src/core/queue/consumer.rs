@@ -75,7 +75,7 @@ pub async fn run(state: Arc<AppState>) {
                 .http_client
                 .post(format!("{}/api/generate", state.config.ollama_url))
                 .json(&serde_json::json!({
-                    "model": "llama3.2",
+                    "model": "phi3:mini",
                     "prompt": _final_prompt,
                     "stream": true,
                     "temperature": 0.3,

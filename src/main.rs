@@ -28,7 +28,7 @@ async fn main() {
         amqp: Arc::new(conn),
         http_client: Client::new(),
         config: Config {
-            ollama_url: "http://localhost:11434".to_string(),
+            ollama_url: "http://localhost:11434".to_string()
         },
         api_requests,
         prom_registry: registry,
