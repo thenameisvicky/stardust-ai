@@ -7,7 +7,7 @@
     "editor.defaultFormatter": "vremyavnikuda.rust-fmt",
     "editor.formatOnSave": true
   },
-  "workbench.colorTheme": "Default Dark Modern",
+  "workbench.colorTheme": "Dark Modern",
   "editor.cursorBlinking": "expand",
   "editor.cursorSmoothCaretAnimation": "on",
   "editor.cursorStyle": "block"

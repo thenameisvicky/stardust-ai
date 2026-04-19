@@ -6,27 +6,16 @@
       "request": "launch",
       "name": "Run Server",
       "cargo": {
-        "args": ["build", "--bin", "server"],
+        "args": [
+          "run",
+          "--bin",
+          "server"
+        ],
         "filter": {
           "name": "server",
           "kind": "bin"
         }
       },
-      "args": [],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Run Consumer",
-      "cargo": {
-        "args": ["build", "--bin", "consumer"],
-        "filter": {
-          "name": "consumer",
-          "kind": "bin"
-        }
-      },
-      "args": [],
       "cwd": "${workspaceFolder}"
     }
   ]

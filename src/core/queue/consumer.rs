@@ -7,6 +7,7 @@ use std::sync::Arc;
 #[derive(Deserialize)]
 struct JobPayload {
     client_id: String,
+    retrieval_context: String,
     prompt: String,
 }
 
@@ -50,26 +51,33 @@ pub async fn run(state: Arc<AppState>) {
 
             println!("[TASK] Starting inference for :{}", client_id);
 
-            let system_prompt = r#"
-                You are an AI assistant that writes short outreach messages.
-                Rules:
-                - Maximum 4 lines.
-                - Be clear, friendly, and natural.
-                - Avoid fluff or filler.
-                - Use common abbreviations where appropriate (AI, CRM, IT, API).
-                - Prefer concise wording over long explanations.
-                - Personalize using provided context.
-                - Do not repeat the prompt.
-                - Do not add greetings like "Hope you're doing well".
-                Structure:
-                Line 1: Context / personalization
-                Line 2: Problem or insight
-                Line 3: Suggestion or value
-                Line 4: Light CTA
-                Output only the message text, If context is insufficient generate generic text do not invent facts
-            "#;
+            // let system_prompt = r#"
+            //     You are an retrieval-augmented assistant.
+            //     Rules:
+            //     - Always use the provided context to answer questions.
+            //     - If the context does not contain the answer, say "I can't find the information you're looking for"
+            //     - Be clear, friendly, and natural.
+            //     - Avoid fluff or filler.
+            //     - Use common abbreviations where appropriate (AI, CRM, IT, API).
+            //     - Prefer concise wording over long explanations.
+            //     - Personalize using provided context.
+            //     - Do not repeat the prompt.
+            //     - Do not add greetings like "Hope you're doing well".
+            //     Structure:
+            //     Line 1: Context / personalization
+            //     Line 2: Problem or insight
+            //     Line 3: Suggestion or value
+            //     Line 4: Light CTA
+            //     Output only the message text, If context is insufficient generate generic text do not invent facts
+            // "#;
 
-            let _final_prompt = format!("{}\n\nUser Context:\n{}\n", system_prompt, payload.prompt);
+            let _final_prompt = format!(
+                "Answer strictly using the context below.
+                Context:{}
+                Question:{}
+                If not found, say: Not found in any of the documents",
+                payload.retrieval_context, payload.prompt
+            );
 
             let response = state
                 .http_client

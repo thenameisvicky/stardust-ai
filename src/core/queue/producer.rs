@@ -8,6 +8,7 @@ use std::sync::Arc;
 pub struct JobPayload {
     pub prompt: String,
     pub client_id: String,
+    pub retrieval_context: String,
 }
 
 pub async fn publish_job(state: Arc<AppState>, payload: JobPayload) {

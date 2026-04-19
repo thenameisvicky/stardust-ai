@@ -10,6 +10,7 @@ mod core;
 mod modules;
 mod state;
 
+use crate::modules::ingestion::store::create_collection;
 use state::{AppState, Config};
 
 #[tokio::main]
@@ -28,12 +29,14 @@ async fn main() {
         amqp: Arc::new(conn),
         http_client: Client::new(),
         config: Config {
-            ollama_url: "http://localhost:11434".to_string()
+            ollama_url: "http://localhost:11434".to_string(),
         },
         api_requests,
         prom_registry: registry,
         clients: DashMap::new(),
     });
+
+    create_collection(&state.http_client).await;
 
     for _ in 0..4 {
         tokio::spawn(core::queue::consumer::run(state.clone()));

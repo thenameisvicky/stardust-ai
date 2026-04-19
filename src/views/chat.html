@@ -117,13 +117,166 @@
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
       }
 
+      .tab-bar {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .tab-btn {
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-family: "Space Mono", monospace;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 12px 22px;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.2s;
+      }
+
+      .tab-btn::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        transform: scaleX(0);
+        transition: transform 0.2s ease;
+      }
+
+      .tab-btn.active {
+        color: var(--text-main);
+      }
+
+      .tab-btn.active::after {
+        transform: scaleX(1);
+      }
+
+      .tab-btn:hover:not(.active) {
+        color: #aaa;
+      }
+
+      .panel {
+        display: none;
+        flex-direction: column;
+        flex: 1;
+      }
+
+      .panel.active {
+        display: flex;
+      }
+
       #output {
         height: 400px;
         overflow-y: auto;
         padding: 2rem;
+        background: #111;
         border-bottom: 1px solid var(--border);
         scrollbar-width: thin;
         scrollbar-color: var(--accent) transparent;
+      }
+
+      #sources-panel {
+        height: 448px;  
+        overflow-y: auto;
+        padding: 1.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gold) transparent;
+      }
+
+      .sources-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 12px;
+        color: var(--text-dim);
+        font-size: 0.75rem;
+        font-family: "Space Mono", monospace;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .sources-empty svg {
+        width: 36px;
+        height: 36px;
+        stroke: #2a2a2a;
+        fill: none;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .source-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        margin-bottom: 10px;
+        animation: fadeIn 0.25s ease;
+        transition: border-color 0.2s;
+      }
+
+      .source-card:hover {
+        border-color: #2a2a2a;
+      }
+
+      .source-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+
+      .source-info {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .source-name {
+        font-family: "Space Mono", monospace;
+        font-size: 0.75rem;
+        color: var(--gold);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .source-meta {
+        font-size: 0.65rem;
+        color: var(--text-dim);
+        margin-top: 3px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .source-badge {
+        font-family: "Space Mono", monospace;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+
+      .badge-pdf {
+        background: rgba(255, 49, 49, 0.12);
+        color: var(--accent);
+        border: 1px solid rgba(255, 49, 49, 0.3);
+      }
+
+      .badge-md {
+        background: rgba(201, 169, 74, 0.1);
+        color: var(--gold);
+        border: 1px solid rgba(201, 169, 74, 0.25);
       }
 
       .message {
@@ -165,16 +318,97 @@
         font-size: 0.8rem;
       }
 
+      .input-wrapper {
+        display: flex;
+        flex-direction: column;
+        background: #0e0e0e;
+      }
+
+      .file-pill {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-bottom: 1px solid var(--border);
+        animation: fadeIn 0.2s ease;
+      }
+
+      .file-pill.visible {
+        display: flex;
+      }
+
+      .file-pill-icon {
+        font-size: 0.75rem;
+        color: var(--gold);
+      }
+
+      .file-pill-name {
+        font-family: "Space Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--gold);
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 320px;
+      }
+
+      .file-pill-remove {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        cursor: pointer;
+        font-size: 0.9rem;
+        line-height: 1;
+        padding: 0 2px;
+        transition: color 0.2s;
+      }
+
+      .file-pill-remove:hover {
+        color: var(--accent);
+      }
+
       .input-area {
         display: flex;
         padding: 1rem;
-        background: #000;
+      }
+
+      .upload-btn {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: border-color 0.2s, color 0.2s;
+        border-radius: 2px;
+        margin-right: 10px;
+      }
+
+      .upload-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+
+      .upload-btn svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       #prompt {
         flex: 1;
-        background: transparent;
-        border: 1px solid var(--border);
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
         color: white;
         padding: 12px 20px;
         font-family: "Space Mono", monospace;
@@ -204,6 +438,32 @@
         color: white;
       }
 
+      .toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(10px);
+        background: #1a0000;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        font-family: "Space Mono", monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 10px 20px;
+        border-radius: 2px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s, transform 0.2s;
+        z-index: 100;
+        white-space: nowrap;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
       .footer {
         margin-top: 2rem;
         font-size: 0.65rem;
@@ -221,21 +481,63 @@
 
     <div class="header">
       <div class="logo">
-        <span class="stardust-text">Stardust</span><span class="ai">AI</span>
+        <span class="stardust-text">Stardust</span><span class="ai">RAG</span>
       </div>
       <div class="desc">Interactive mode, Ask about the documents uploaded</div>
     </div>
 
     <div class="chat-container">
-      <div id="output">
-        <div class="message llm">System initialized. Awaiting queries</div>
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-chat" onclick="switchTab('chat')">Chat</button>
+        <button class="tab-btn" id="tab-sources" onclick="switchTab('sources')">Sources</button>
       </div>
 
-      <div class="input-area">
-        <input id="prompt" placeholder="Generate Info..." autocomplete="off" />
-        <button class="gen-btn" onclick="generate()">Generate</button>
+      <div class="panel active" id="panel-chat">
+        <div id="output">
+          <div class="message llm">System initialized. Awaiting queries</div>
+        </div>
+
+        <input
+          type="file"
+          id="file-input"
+          accept=".pdf,.md"
+          style="display: none"
+          onchange="handleFileSelect(event)"
+        />
+
+        <div class="input-wrapper">
+          <div class="file-pill" id="file-pill">
+            <span class="file-pill-icon">📄</span>
+            <span class="file-pill-name" id="file-pill-name"></span>
+            <button class="file-pill-remove" onclick="clearFile()" title="Remove file">✕</button>
+          </div>
+
+          <div class="input-area">
+            <button class="upload-btn" onclick="document.getElementById('file-input').click()" title="Attach PDF or Markdown">
+              <svg viewBox="0 0 24 24">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </button>
+            <input id="prompt" placeholder="Generate Info..." autocomplete="off" />
+            <button class="gen-btn" onclick="generate()">Generate</button>
+          </div>
+        </div>
       </div>
+
+      <div class="panel" id="panel-sources">
+        <div id="sources-panel">
+          <div class="sources-empty" id="sources-empty">
+            <svg viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            No documents uploaded yet
+          </div>
+        </div>
+      </div>
+
     </div>
+    <div class="toast" id="toast"></div>
 
     <div class="footer">© 2026 ARKAION LABORATORY</div>
 
@@ -243,6 +545,7 @@
       let ws;
       let client_id = null;
       let aiMessage = null;
+      let attachedFile = null;
       const output = document.getElementById("output");
 
       function connectWS() {
@@ -271,11 +574,108 @@
 
       connectWS();
 
+
+      function switchTab(tab) {
+        document.getElementById("panel-chat").classList.toggle("active", tab === "chat");
+        document.getElementById("panel-sources").classList.toggle("active", tab === "sources");
+        document.getElementById("tab-chat").classList.toggle("active", tab === "chat");
+        document.getElementById("tab-sources").classList.toggle("active", tab === "sources");
+      }
+
+
+      const uploadedSources = [];
+
+      function addSourceCard(filename) {
+        const ext = filename.split(".").pop().toLowerCase();
+        const icon = ext === "pdf" ? "📕" : "📝";
+        const now = new Date();
+        const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+        document.getElementById("sources-empty").style.display = "none";
+
+        const card = document.createElement("div");
+        card.className = "source-card";
+        card.innerHTML = `
+          <span class="source-icon">${icon}</span>
+          <div class="source-info">
+            <div class="source-name">${filename}</div>
+            <div class="source-meta">Uploaded at ${time}</div>
+          </div>
+          <span class="source-badge badge-${ext}">${ext.toUpperCase()}</span>
+        `;
+
+        document.getElementById("sources-panel").appendChild(card);
+        uploadedSources.push({ filename, time });
+      }
+
+      const ACCEPTED_TYPES = ["pdf", "md"];
+
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const ext = file.name.split(".").pop().toLowerCase();
+        if (!ACCEPTED_TYPES.includes(ext)) {
+          showToast("Only PDF (.pdf) and Markdown (.md) files are accepted");
+          event.target.value = "";
+          return;
+        }
+
+        attachedFile = file;
+        document.getElementById("file-pill-name").textContent = file.name;
+        document.getElementById("file-pill").classList.add("visible");
+      }
+
+      function clearFile() {
+        attachedFile = null;
+        document.getElementById("file-input").value = "";
+        document.getElementById("file-pill-name").textContent = "";
+        document.getElementById("file-pill").classList.remove("visible");
+      }
+
+      async function uploadFile(file) {
+        const form = new FormData();
+        form.append("file", file, file.name);
+        const res = await fetch("/api/ingest", { method: "POST", body: form });
+        return res.json();
+      }
+
       async function generate() {
         if (!client_id) return;
 
         const promptInput = document.getElementById("prompt");
         const prompt = promptInput.value.trim();
+        if (!prompt && !attachedFile) return;
+        if (attachedFile) {
+          const sysMsg = document.createElement("div");
+          sysMsg.className = "message loading";
+          sysMsg.textContent = `Uploading ${attachedFile.name}...`;
+          output.appendChild(sysMsg);
+          output.scrollTop = output.scrollHeight;
+
+          const result = await uploadFile(attachedFile);
+
+          sysMsg.remove();
+
+          const ackMsg = document.createElement("div");
+          ackMsg.className = "message llm";
+          ackMsg.style.borderColor = "var(--gold)";
+          ackMsg.textContent = result.error
+            ? `⚠ ${result.error}`
+            : `✓ Document uploaded: ${result.filename}`;
+          output.appendChild(ackMsg);
+
+          if (!result.error) addSourceCard(result.filename);
+          clearFile();
+        }
+
         if (!prompt) return;
 
         promptInput.value = "";
