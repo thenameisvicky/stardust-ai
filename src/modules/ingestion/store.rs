@@ -1,6 +1,7 @@
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
+use uuid::Uuid;
 
 pub async fn create_collection(client: &reqwest::Client) {
     let url = "http://localhost:6333/collections/stardust";
@@ -93,7 +94,7 @@ pub async fn query_similar(
     client: &Client,
     query_embedding: Vec<f32>,
     top_k: usize,
-) -> Vec<(String, f32)> {
+) -> Vec<(String, String, f32)> {
     let url = "http://localhost:6333/collections/stardust/points/search";
 
     let body = json!({
@@ -111,7 +112,14 @@ pub async fn query_similar(
                 .as_array()
                 .unwrap_or(&vec![])
                 .iter()
-                .filter_map(|item| item["payload"]["text"].as_str().map(|s| s.to_string()))
+                .take(5)
+                .filter_map(|item| {
+                    let text = item["payload"]["text"].as_str()?;
+                    let source = item["payload"]["source"].as_str()?;
+                    let score = item["score"].as_f64()? as f32;
+
+                    Some((text.to_string(), source.to_string(), score))
+                })
                 .collect()
         }
         Err(e) => {
@@ -121,6 +129,12 @@ pub async fn query_similar(
     }
 }
 
-pub fn build_context(chunks: Vec<String>) -> String {
-    chunks.join("\n---\n")
+pub fn build_context(chunks: Vec<(String, String, f32)>) -> String {
+    chunks
+        .into_iter()
+        .map(|(text, source, score)| {
+            format!("[Source: {} | Score: {:.2}]\n{}", source, score, text)
+        })
+        .collect::<Vec<_>>()
+        .join("\n\n---\n\n")
 }

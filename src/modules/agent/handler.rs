@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::sync::Arc;
 
 use crate::core::queue::producer::{publish_job, JobPayload};
-use crate::modules::ingestion::store::{embed, query_similar};
+use crate::modules::ingestion::store::{build_context, embed, query_similar};
 use crate::state::AppState;
 
 #[derive(Deserialize)]
@@ -23,7 +23,7 @@ pub async fn chat_handler(
 
     let similar_chunks = query_similar(&state.http_client, user_prompt_embedding, 5).await;
 
-    let context = build_context(chunks);
+    let context = build_context(similar_chunks);
 
     let job = JobPayload {
         client_id: client_id.clone(),
