@@ -23,12 +23,26 @@ pub struct Points {
 }
 
 pub async fn create_collection(client: &Qdrant) {
-    let _ = client
-        .create_collection(
-            CreateCollectionBuilder::new("stardust")
-                .vectors_config(VectorParamsBuilder::new(768, Distance::Cosine)),
-        )
-        .await;
+    match client.collection_exists("stardust").await {
+        Ok(exists) => {
+            if !exists {
+                println!("Collection 'stardust' not found. Creating...");
+                match client
+                    .create_collection(
+                        CreateCollectionBuilder::new("stardust")
+                            .vectors_config(VectorParamsBuilder::new(768, Distance::Cosine)),
+                    )
+                    .await
+                {
+                    Ok(_) => println!("Collection 'stardust' created successfully."),
+                    Err(e) => eprintln!("Failed to create collection 'stardust': {}", e),
+                }
+            } else {
+                println!("Collection 'stardust' already exists.");
+            }
+        }
+        Err(e) => eprintln!("Error checking if collection exists: {}", e),
+    }
 }
 
 pub fn chunk_with_overlap(text: &str, chunk_size: usize, overlap: usize) -> Vec<String> {
