@@ -1,22 +1,37 @@
+use qdrant_client::Qdrant;
+use qdrant_client::qdrant::{
+    CreateCollectionBuilder, Distance, PointStruct, QueryPointsBuilder,
+    UpsertPointsBuilder, VectorParamsBuilder,
+};
 use reqwest::Client;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::collections::HashMap;
 use uuid::Uuid;
 
-pub async fn create_collection(client: &reqwest::Client) {
-    let url = "http://localhost:6333/collections/stardust";
-
-    let body = serde_json::json!({
-        "vectors": {
-            "size": 768,
-            "distance": "Cosine"
-        }
-    });
-
-    let _ = client.put(url).json(&body).send().await;
+#[derive(Deserialize, Debug, Clone, Serialize)]
+pub struct Payload {
+    pub text: String,
+    pub source: String,
 }
 
-pub async fn chunk_with_overlap(text: &str, chunk_size: usize, overlap: usize) -> Vec<String> {
+#[derive(Deserialize, Debug, Clone, Serialize)]
+pub struct Points {
+    pub id: String,
+    pub vector: Vec<f32>,
+    pub payload: Payload,
+}
+
+pub async fn create_collection(client: &Qdrant) {
+    let _ = client
+        .create_collection(
+            CreateCollectionBuilder::new("stardust")
+                .vectors_config(VectorParamsBuilder::new(768, Distance::Cosine)),
+        )
+        .await;
+}
+
+pub fn chunk_with_overlap(text: &str, chunk_size: usize, overlap: usize) -> Vec<String> {
     let mut chunks = Vec::new();
     let mut start = 0;
     let text_len = text.len();
@@ -43,7 +58,13 @@ pub async fn embed(client: &Client, ollama_url: &str, text: &str) -> Vec<f32> {
 
     match response {
         Ok(res) => {
-            let json: serde_json::Value = res.json().await.unwrap();
+            let json: serde_json::Value = match res.json().await {
+                Ok(v) => v,
+                Err(e) => {
+                    println!("Embedding parse error: {}", e);
+                    return Vec::new();
+                }
+            };
 
             let embedding = json
                 .get("embeddings")
@@ -68,65 +89,88 @@ pub async fn embed(client: &Client, ollama_url: &str, text: &str) -> Vec<f32> {
     }
 }
 
-pub async fn store_embedding(client: &Client, embedding: Vec<f32>, text: &str, source: &str) {
-    let url = "http://localhost:6333/collections/stardust/points";
-
-    let body = json!({
-        "points": [
-            {
-                "id": Uuid::new_v4().to_string(),
-                "vector": embedding,
-                "payload": {
-                    "text": text,
-                    "source": source
-                }
-            }
-        ]
-    });
-
-    match client.post(url).json(&body).send().await {
-        Ok(_) => println!("Stored vector"),
-        Err(e) => println!("Store error: {}", e),
+pub fn build_point(text: &str, source: &str, embedding: Vec<f32>) -> Option<Points> {
+    if embedding.is_empty() {
+        println!("Warning: Empty embedding vector for text: {:?}", text);
+        return None;
     }
+
+    Some(Points {
+        id: Uuid::new_v4().to_string(),
+        vector: embedding,
+        payload: Payload {
+            text: text.to_string(),
+            source: source.to_string(),
+        },
+    })
+}
+
+pub async fn store_embedding(client: &Qdrant, points: Vec<Points>) -> Result<(), String> {
+    const BATCH_SIZE: usize = 5;
+
+    for (batch_idx, batch) in points.chunks(BATCH_SIZE).enumerate() {
+        let qdrant_points: Vec<PointStruct> = batch
+            .iter()
+            .map(|p| {
+                let payload: HashMap<String, qdrant_client::qdrant::Value> = HashMap::from([
+                    ("text".to_string(), p.payload.text.clone().into()),
+                    ("source".to_string(), p.payload.source.clone().into()),
+                ]);
+                PointStruct::new(
+                    rand::random::<u64>(),
+                    p.vector.clone(),
+                    payload,
+                )
+            })
+            .collect();
+
+        client
+            .upsert_points(UpsertPointsBuilder::new("stardust", qdrant_points))
+            .await
+            .map_err(|e| {
+                eprintln!("[store_embedding] batch {} upsert failed: {}", batch_idx, e);
+                e.to_string()
+            })?;
+
+        println!("Stored batch {}/{}", batch_idx + 1, (points.len() + BATCH_SIZE - 1) / BATCH_SIZE);
+    }
+
+    Ok(())
 }
 
 pub async fn query_similar(
-    client: &Client,
+    client: &Qdrant,
     query_embedding: Vec<f32>,
     top_k: usize,
 ) -> Vec<(String, String, f32)> {
-    let url = "http://localhost:6333/collections/stardust/points/search";
-
-    let body = json!({
-        "vector": query_embedding,
-        "limit": top_k,
-    });
-
-    let response = client.post(url).json(&body).send().await;
-
-    match response {
-        Ok(res) => {
-            let json: serde_json::Value = res.json().await.unwrap();
-
-            json["result"]
-                .as_array()
-                .unwrap_or(&vec![])
-                .iter()
-                .take(5)
-                .filter_map(|item| {
-                    let text = item["payload"]["text"].as_str()?;
-                    let source = item["payload"]["source"].as_str()?;
-                    let score = item["score"].as_f64()? as f32;
-
-                    Some((text.to_string(), source.to_string(), score))
-                })
-                .collect()
-        }
+    let result = match client
+        .query(
+            QueryPointsBuilder::new("stardust")
+                .query(query_embedding)
+                .limit(top_k as u64)
+                .with_payload(true),
+        )
+        .await
+    {
+        Ok(r) => r,
         Err(e) => {
-            println!("Search error: {}", e);
-            vec![]
+            eprintln!("[query_similar] Qdrant search failed: {}", e);
+            return Vec::new();
         }
-    }
+    };
+
+    result
+        .result
+        .into_iter()
+        .filter_map(|point| {
+            let payload = point.payload;
+            let text = payload.get("text")?.as_str()?.to_string();
+            let source = payload.get("source")?.as_str()?.to_string();
+            let score = point.score;
+
+            Some((text, source, score))
+        })
+        .collect()
 }
 
 pub fn build_context(chunks: Vec<(String, String, f32)>) -> String {

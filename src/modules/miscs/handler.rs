@@ -1,7 +1,4 @@
-use axum::{
-    http::{header, StatusCode},
-    response::{IntoResponse, Response},
-};
+use axum::response::IntoResponse;
 
 pub async fn download_compose() -> impl IntoResponse {
     let compose_file = include_str!("../../../docker-compose.yml");

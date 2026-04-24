@@ -1,6 +1,7 @@
 use super::store::chunk_with_overlap;
 use super::store::embed;
 use super::store::store_embedding;
+use crate::modules::ingestion::store::build_point;
 use crate::state::AppState;
 use axum::{
     extract::{Multipart, State},
@@ -51,9 +52,11 @@ pub async fn ingest_handler(
 
         println!("Received file: {}, size: {} bytes", filename, bytes.len());
 
-        let chunks = chunk_with_overlap(&text, 300, 70).await;
+        let chunks = chunk_with_overlap(&text, 300, 70);
 
         println!("Generated {} chunks for file: {}", chunks.len(), filename);
+
+        let mut points = Vec::new();
 
         for chunk in chunks {
             let embedding = embed(&state.http_client, &state.config.ollama_url, &chunk).await;
@@ -62,7 +65,18 @@ pub async fn ingest_handler(
                 filename,
                 embedding.len()
             );
-            store_embedding(&state.http_client, embedding, &chunk, &filename).await;
+
+            if let Some(point) = build_point(&chunk, &filename, embedding) {
+                points.push(point);
+            }
+        }
+
+        if let Err(e) = store_embedding(&state.qdrant_client, points).await {
+            eprintln!("[ingest_handler] Failed to store embeddings: {}", e);
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": "Failed to store embeddings in Qdrant. Is Qdrant running?" })),
+            );
         }
 
         return (

@@ -16,4 +16,5 @@ pub struct AppState {
     pub prom_registry: Registry,
     pub api_requests: Counter,
     pub clients: DashMap<String, Sender<String>>,
+    pub qdrant_client: qdrant_client::Qdrant,
 }

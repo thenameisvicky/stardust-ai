@@ -21,7 +21,7 @@ pub async fn chat_handler(
 
     let user_prompt_embedding = embed(&state.http_client, &state.config.ollama_url, prompt).await;
 
-    let similar_chunks = query_similar(&state.http_client, user_prompt_embedding, 5).await;
+    let similar_chunks = query_similar(&state.qdrant_client, user_prompt_embedding, 5).await;
 
     let context = build_context(similar_chunks);
 
