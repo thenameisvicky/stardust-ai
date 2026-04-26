@@ -50,14 +50,20 @@ pub async fn run(state: Arc<AppState>) {
             let client_id = payload.client_id.clone();
 
             println!("[TASK] Starting inference for :{}", client_id);
+            println!("[TASK] Retrieval Context: {:#?}", payload.retrieval_context);
 
             let _final_prompt = format!(
-                "Answer ONLY from the context.
-                If the answer is IMPLIED or reasonably inferred, answer it confidently.
-                Context:{}
-                Question:{}
-                If not found, say: Not found in any of the documents",
-                payload.retrieval_context, payload.prompt
+            "### SYSTEM
+            Answer ONLY using the provided context.
+            If answer is not present, say: Not found.
+            ### CONTEXT
+            {}
+            ### QUESTION
+            {}
+            ### ANSWER
+            ",
+                payload.retrieval_context,
+                payload.prompt
             );
 
             let response = state
@@ -67,11 +73,14 @@ pub async fn run(state: Arc<AppState>) {
                     "model": "phi3:mini",
                     "prompt": _final_prompt,
                     "stream": true,
-                    "temperature": 0.3,
-                    "top_p": 0.9,
-                    "top_k": 40,
-                    "repeat_penalty": 1.1,
-                    "max_tokens": 200,
+                    "options": {
+                        "temperature": 0.3,
+                        "top_p": 0.9,
+                        "top_k": 40,
+                        "repeat_penalty": 1.1,
+                        "num_ctx": 2048,
+                        "num_predict": 200
+                    },
                     "stop": ["\n\n"]
                 }))
                 .send()
