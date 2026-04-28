@@ -1,17 +1,26 @@
+# Layer 0 - Evaluation Layer
+
+- [ ] Create evaluation data sets real world use cases - code base, SaaS support docs and define expected answers - mega version of unit test.
+- [ ] Build scoring retrieval: precision@k, answer: correctness/ groundness.
+- [ ] Dashboard to run evals - new view.
+
 # Layer 1 — Data Quality Layer
+
 - [x] Refactor current architecture to scalable one - March 14, 2026
 - [x] Introduce static client, test full flow - March 14, 2026
 - [x] Use AppState across modules - March 14, 2026
 - [x] Implement response streaming per client (unique client id) - March 14, 2026
-- [ ] Implement chunking (fixed + overlap)
+- [x] Implement chunking (fixed + overlap)
 - [ ] Define document ingestion standards (PDF / MD / codebase)
 - [ ] Build document preparation guide aligned with chunking strategy
 - [ ] Add metadata strategy (source, file, section, timestamp)
 
 # Layer 2 — Retrieval Quality Layer
+
 - [ ] Implement dense retrieval (vector search via Qdrant)
 - [ ] Add BM25 / keyword retrieval layer
 - [ ] Merge dense + sparse retrieval (hybrid search)
+- [ ] Metadata filtering
 - [ ] Add basic reranker
 - [ ] Improve query rewriting (LLM-based query expansion)
 - [ ] Implement filtering by metadata (source, type, tenant)
@@ -19,6 +28,7 @@
 - [ ] Evaluate retrieval quality metrics (precision@k baseline)
 
 # Layer 3 — Context Builder Layer
+
 - [ ] Context builder (top-k selection + token budget control)
 - [ ] Source attribution system (doc + chunk tracing)
 - [ ] Anti-hallucination prompt system
@@ -27,7 +37,16 @@
 - [ ] Context ranking (score-based ordering of chunks)
 - [ ] Token window management per model
 
-# Layer 4 — LLM Orchestration Layer
+# Layer 4 - Ingestion Layer
+
+- [ ] Github repo ingestion feature.
+- [ ] Code-aware parsing.
+- [ ] Clean markdown extraction.
+- [ ] PDF -> structured sections.
+- [ ] Metadata strategy ex: filename, path, function name, line number etc...
+
+# Layer 5 — LLM Orchestration Layer
+
 - [x] Implement token streaming to client - March 15, 2026
 - [x] Configure Ollama parallel execution (3 concurrent prompts) - March 15, 2026
 - [ ] Prompt template system (task-specific prompts)
@@ -38,7 +57,8 @@
 - [ ] Add structured output modes (JSON / tool-like responses)
 - [ ] Add cost-aware model selection
 
-# Layer 5 — SaaS Layer
+# Layer 6 — SaaS Layer
+
 - [x] Containerize and publish to Docker - March 18, 2026
 - [x] Create landing page - March 18, 2026
 - [x] Test full flow (Docker pull + run) - March 18, 2026
@@ -56,7 +76,8 @@
 - [ ] Deployment strategy for self-hosted + cloud
 - [ ] Home server / infra cost optimization plan
 
-# Layer 6 — Advanced Scale Layer
+# Layer 7 — Advanced Scale Layer
+
 - [ ] Graph RAG
 - [ ] Agentic RAG system
 - [ ] Evaluation dashboard (retrieval + generation scoring)
